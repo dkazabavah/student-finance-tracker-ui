@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Regex Tests - Student Finance Tracker</title>
+  <link rel="stylesheet" href="./styles/main.css" />
+</head>
+<body>
+  <main class="wrap panel" style="margin-top:1rem;">
+    <h1>Regex Tests</h1>
+    <p class="muted">Open this in the browser. Results show below.</p>
+    <pre id="out" class="card"></pre>
+  </main>
+
+  <script type="module">
+    import { RE, validateTxn } from "./scripts/validators.js";
+
+    const out = document.querySelector("#out");
+    const lines = [];
+
+    function ok(name, cond){
+      lines.push(`${cond ? "✅" : "❌"} ${name}`);
+    }
+
+    // Description
+    ok("descNoEdgeSpaces blocks leading space", !RE.descNoEdgeSpaces.test(" hello"));
+    ok("descNoEdgeSpaces blocks trailing space", !RE.descNoEdgeSpaces.test("hello "));
+    ok("descNoEdgeSpaces allows normal", RE.descNoEdgeSpaces.test("hello world"));
+
+    // Advanced duplicate-word
+    ok("dupWord catches 'coffee coffee'", RE.dupWord.test("coffee coffee"));
+    ok("dupWord does not catch 'coffee with coffee'", !RE.dupWord.test("coffee with coffee"));
+
+    // Amount
+    ok("numberMoney accepts 0", RE.numberMoney.test("0"));
+    ok("numberMoney accepts 12.50", RE.numberMoney.test("12.50"));
+    ok("numberMoney rejects 01", !RE.numberMoney.test("01"));
+    ok("numberMoney rejects 12.500", !RE.numberMoney.test("12.500"));
+
+    // Date
+    ok("dateYMD accepts 2025-09-29", RE.dateYMD.test("2025-09-29"));
+    ok("dateYMD rejects 2025-13-01", !RE.dateYMD.test("2025-13-01"));
+
+    // Category
+    ok("category accepts 'Bus Pass'", RE.category.test("Bus Pass"));
+    ok("category rejects 'Food!'", !RE.category.test("Food!"));
+
+    // Full validateTxn
+    const errs = validateTxn({ description:"coffee coffee", amount:"12.50", category:"Food", date:"2025-09-29" });
+    ok("validateTxn flags duplicate word description", !!errs.description);
+
+    out.textContent = lines.join("\n");
+  </script>
+</body>
+</html>
