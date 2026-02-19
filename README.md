@@ -1,69 +1,33 @@
-# Student Finance Tracker (Vanilla HTML/CSS/JS)
+# Student Finance Tracker
 
-## Theme
-Student Finance Tracker
+A simple finance tracker to help you record daily spending and stay organized.
 
 ## Features
-- Semantic layout: header/nav/main/section/footer + headings
-- Mobile-first responsive UI with 3 breakpoints (≈360px, 768px, 1024px)
-- Records rendered as cards on mobile and table on desktop
-- Add/Edit form with regex validation + error UI
-- Inline edit + delete with confirm
-- Sorting (date, description, amount)
-- Live regex search with safe compiler (try/catch) + match highlighting using <mark>
-- Stats dashboard: total records, total spent, top category, last-7-days trend chart
-- Cap/Target: remaining/overage announced via ARIA live (polite vs assertive)
-- Persistence: localStorage autosave
-- Settings: base currency + manual rates + categories + cap
-- JSON import/export with structure validation
-- Tests page with small assertions (tests.html)
+- Add, edit, and delete transactions
+- Search and sort records
+- Dashboard summary + last 7 days trend chart
+- Monthly spending cap
+- Light mode (default) + Dark mode toggle (saved)
+- Optional receipt photo link per record
+- Auto-save using localStorage
+- Import/Export JSON
+- Export supports downloading a real `.json` file
 
-## Regex Catalog (patterns + examples)
-1) Description/title: no leading/trailing spaces  
-- Pattern: `/^\S(?:.*\S)?$/`
-- Example valid: `Lunch at cafeteria`
-- Invalid: `" Lunch"` or `"Lunch "`
+## How to Run
+Use a local server (recommended):
+- VS Code → Live Server → Open `index.html`
 
-2) Advanced: duplicate word back-reference  
-- Pattern: `/\b(\w+)\s+\1\b/i`
-- Example invalid: `coffee coffee`
+## Import / Export
+- Export (Copy): shows JSON in the Export output box
+- Export (Download): downloads a `.json` file
+- Import: paste JSON or upload a `.json` file
+- Load seed.json: loads sample records
 
-3) Amount: number with up to 2 decimals  
-- Pattern: `/^(0|[1-9]\d*)(\.\d{1,2})?$/`
-- Valid: `0`, `10`, `10.5`, `10.50`
-- Invalid: `01`, `10.555`
+## Default Currency Rates
+Prefilled with official BNR selling rates (manual mode) from 18-Feb-2026:
+- USD selling: 1461.705 RWF → 1 RWF ≈ 0.0006841326 USD
+- EUR selling: 1731.170317 RWF → 1 RWF ≈ 0.0005776439 EUR
 
-4) Date: YYYY-MM-DD with ranges  
-- Pattern: `/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/`
-
-5) Category: letters, spaces, hyphens  
-- Pattern: `/^[A-Za-z]+(?:[ -][A-Za-z]+)*$/`
-- Valid: `Bus Pass`, `School-Fees`
-- Invalid: `Food!`
-
-## Keyboard Map
-- Tab / Shift+Tab: move through controls
-- Enter/Space: activate buttons
-- Skip link: jump to main content
-- Visible focus ring on all interactive elements
-
-## Accessibility Notes
-- ARIA live regions:
-  - `role="status"` polite for normal updates
-  - assertive live for cap exceeded + form blocking errors
-- Labels bound to inputs
-- Focus-visible styles
-- Mobile cards keep actions accessible without hover
-
-## How to run
-Open `index.html` in a browser.
-
-## How to run tests
-Open `tests.html` in a browser and view the results.
-
-## Import/Export
-- Export: Settings → Export
-- Import: paste JSON array → Validate & Import
-
-## Deployment
-Use GitHub Pages (required).
+## Contact
+- GitHub: https://github.com/dkazabavah
+- Email: d.kazabavah@alustudent.com

@@ -1,6 +1,7 @@
 import { state, setView, setSort, setSearch, addRecord, updateRecord, deleteRecord, setSettings } from "./state.js";
 import { validateTxn, validateRates, validateCap } from "./validators.js";
 import { compileRegex, highlight } from "./search.js";
+import { keys } from "./storage.js";
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -14,7 +15,6 @@ const els = {
     about: $("#panel-about"),
   },
 
-  // Records UI
   tbody: $("#recordsTbody"),
   cards: $("#recordsCards"),
   regexInput: $("#regexInput"),
@@ -22,13 +22,13 @@ const els = {
   regexHint: $("#regexHint"),
   sortBy: $("#sortBy"),
 
-  // Form
   form: $("#txnForm"),
   editId: $("#editId"),
   description: $("#description"),
   amount: $("#amount"),
   category: $("#category"),
   date: $("#date"),
+  receiptUrl: $("#receiptUrl"),
   resetBtn: $("#resetBtn"),
   deleteBtn: $("#deleteBtn"),
 
@@ -36,8 +36,8 @@ const els = {
   errAmount: $("#errAmount"),
   errCategory: $("#errCategory"),
   errDate: $("#errDate"),
+  errReceipt: $("#errReceipt"),
 
-  // Dashboard stats
   statTotalRecords: $("#statTotalRecords"),
   statTotalSpent: $("#statTotalSpent"),
   statTopCategory: $("#statTopCategory"),
@@ -47,7 +47,7 @@ const els = {
   trendBars: $("#trendBars"),
   trendLabels: $("#trendLabels"),
 
-  // Settings
+  darkModeToggle: $("#darkModeToggle"),
   baseCurrency: $("#baseCurrency"),
   rateUSD: $("#rateUSD"),
   rateEUR: $("#rateEUR"),
@@ -57,33 +57,28 @@ const els = {
   saveCapBtn: $("#saveCapBtn"),
   saveCatsBtn: $("#saveCatsBtn"),
   exportBtn: $("#exportBtn"),
+  downloadExportBtn: $("#downloadExportBtn"),
+  loadSeedBtn: $("#loadSeedBtn"),
   importBtn: $("#importBtn"),
   importArea: $("#importArea"),
+  importFile: $("#importFile"),
   exportArea: $("#exportArea"),
-  downloadSeedBtn: $("#downloadSeedBtn"),
 
-  // About
-  githubLink: $("#githubLink"),
-  emailLink: $("#emailLink"),
-
-  // Live regions
   liveStatus: $("#liveStatus"),
   liveAlert: $("#liveAlert"),
-
-  year: $("#year"),
 };
 
-function announceStatus(msg) {
-  els.liveStatus.textContent = msg;
-}
+function announceStatus(msg) { els.liveStatus.textContent = msg; }
+function announceAlert(msg) { els.liveAlert.textContent = msg; }
 
-function announceAlert(msg) {
-  els.liveAlert.textContent = msg;
+function applyTheme(theme) {
+  const t = theme === "dark" ? "dark" : "light";
+  document.documentElement.setAttribute("data-theme", t);
+  els.darkModeToggle.checked = t === "dark";
 }
 
 function formatMoney(n) {
   const base = state.settings.baseCurrency || "RWF";
-  // simple formatting, no Intl dependencies for rubric
   const v = Number(n || 0);
   return `${base} ${v.toFixed(2)}`;
 }
@@ -91,16 +86,12 @@ function formatMoney(n) {
 function topCategory(records) {
   const counts = new Map();
   for (const r of records) counts.set(r.category, (counts.get(r.category) || 0) + 1);
-  let top = null;
-  let best = 0;
-  for (const [k, v] of counts.entries()) {
-    if (v > best) { best = v; top = k; }
-  }
+  let top = null, best = 0;
+  for (const [k, v] of counts.entries()) if (v > best) { best = v; top = k; }
   return top || "—";
 }
 
 function last7DaysTrend(records) {
-  // returns array of 7 days (old->new): {label, total}
   const today = new Date();
   const days = [];
   for (let i = 6; i >= 0; i--) {
@@ -127,18 +118,15 @@ function applyCap(totalSpent) {
     els.statCapMsg.textContent = "Set a cap in Settings.";
     return;
   }
-
   els.statCap.textContent = formatMoney(cap);
   const diff = cap - totalSpent;
 
   if (diff >= 0) {
     els.statCapMsg.textContent = `Remaining: ${formatMoney(diff)}`;
-    // polite
-    announceStatus(`You are under cap. Remaining ${formatMoney(diff)}.`);
+    announceStatus(`Remaining ${formatMoney(diff)}.`);
   } else {
     els.statCapMsg.textContent = `Over by: ${formatMoney(Math.abs(diff))}`;
-    // assertive
-    announceAlert(`Cap exceeded! Over by ${formatMoney(Math.abs(diff))}.`);
+    announceAlert(`Over cap by ${formatMoney(Math.abs(diff))}.`);
   }
 }
 
@@ -179,25 +167,21 @@ function getFilteredSortedRecords() {
   const flags = caseInsensitive ? "i" : "";
   const re = compileRegex(pattern, flags);
 
-  if (pattern && !re) {
-    els.regexHint.textContent = "Invalid regex pattern. Fix it to filter/highlight.";
-    els.regexHint.style.color = "var(--bad)";
-  } else {
-    els.regexHint.textContent = "Type a regex pattern. Invalid patterns won’t crash the app.";
-    els.regexHint.style.color = "";
-  }
-
   let items = [...state.records];
+
+  if (pattern && !re) els.regexHint.textContent = "Search pattern is not valid.";
+  else els.regexHint.textContent = "";
 
   if (re) {
     items = items.filter((r) => {
-      const hay = `${r.date} ${r.description} ${r.category} ${r.amount}`;
+      const hay = `${r.date} ${r.description} ${r.category} ${r.amount} ${r.receiptUrl || ""}`;
       return re.test(hay);
     });
   }
 
   const s = state.sort;
   const cmpText = (a, b) => a.localeCompare(b, undefined, { sensitivity: "base" });
+
   items.sort((a, b) => {
     switch (s) {
       case "date_asc": return cmpText(a.date, b.date);
@@ -225,7 +209,6 @@ function actionButtonsHTML(id) {
 function renderRecords() {
   const { items, re } = getFilteredSortedRecords();
 
-  // Table
   els.tbody.innerHTML = "";
   for (const r of items) {
     const tr = document.createElement("tr");
@@ -242,6 +225,11 @@ function renderRecords() {
     tdCat.className = "mark-wrap";
     tdCat.innerHTML = `<span class="pill">${highlight(r.category, re)}</span>`;
 
+    const tdPhoto = document.createElement("td");
+    tdPhoto.innerHTML = r.receiptUrl
+      ? `<a href="${r.receiptUrl}" target="_blank" rel="noopener"><img class="thumb" src="${r.receiptUrl}" alt="Receipt"></a>`
+      : `<span class="muted">—</span>`;
+
     const tdAmt = document.createElement("td");
     tdAmt.className = "num mark-wrap";
     tdAmt.innerHTML = highlight(formatMoney(r.amount), re);
@@ -249,11 +237,10 @@ function renderRecords() {
     const tdAct = document.createElement("td");
     tdAct.innerHTML = actionButtonsHTML(r.id);
 
-    tr.append(tdDate, tdDesc, tdCat, tdAmt, tdAct);
+    tr.append(tdDate, tdDesc, tdCat, tdPhoto, tdAmt, tdAct);
     els.tbody.appendChild(tr);
   }
 
-  // Cards (mobile)
   els.cards.innerHTML = "";
   for (const r of items) {
     const div = document.createElement("article");
@@ -262,13 +249,14 @@ function renderRecords() {
       <div class="card-row"><span class="k">Date</span><span class="mark-wrap">${highlight(r.date, re)}</span></div>
       <div class="card-row"><span class="k">Description</span><span class="mark-wrap">${highlight(r.description, re)}</span></div>
       <div class="card-row"><span class="k">Category</span><span class="pill mark-wrap">${highlight(r.category, re)}</span></div>
+      <div class="card-row"><span class="k">Photo</span><span>${r.receiptUrl ? `<a href="${r.receiptUrl}" target="_blank" rel="noopener"><img class="thumb" src="${r.receiptUrl}" alt="Receipt"></a>` : `<span class="muted">—</span>`}</span></div>
       <div class="card-row"><span class="k">Amount</span><span class="mark-wrap">${highlight(formatMoney(r.amount), re)}</span></div>
       ${actionButtonsHTML(r.id)}
     `;
     els.cards.appendChild(div);
   }
 
-  announceStatus(`Rendered ${items.length} record(s).`);
+  announceStatus(`Showing ${items.length} record(s).`);
 }
 
 function clearFormErrors() {
@@ -276,6 +264,7 @@ function clearFormErrors() {
   els.errAmount.textContent = "";
   els.errCategory.textContent = "";
   els.errDate.textContent = "";
+  els.errReceipt.textContent = "";
 }
 
 function setFormMode(editing) {
@@ -289,6 +278,7 @@ function fillForm(rec) {
   els.amount.value = String(rec.amount);
   els.category.value = rec.category;
   els.date.value = rec.date;
+  els.receiptUrl.value = rec.receiptUrl || "";
   setFormMode(true);
 }
 
@@ -300,51 +290,48 @@ function resetForm() {
 }
 
 function showPanel(view) {
-  Object.entries(els.panels).forEach(([k, el]) => {
-    el.hidden = k !== view;
-  });
-
+  Object.entries(els.panels).forEach(([k, el]) => { el.hidden = k !== view; });
   els.tabs().forEach((b) => {
     const active = b.dataset.tab === view;
     b.setAttribute("aria-current", active ? "page" : "false");
   });
-
-  // focus main for keyboard users
   $("#main").focus({ preventScroll: true });
 }
 
 function isImportValid(arr) {
-  if (!Array.isArray(arr)) return { ok: false, msg: "JSON must be an array of records." };
+  if (!Array.isArray(arr)) return { ok: false, msg: "Import must be a list of records." };
 
   const required = ["id", "description", "amount", "category", "date", "createdAt", "updatedAt"];
   for (let i = 0; i < arr.length; i++) {
     const r = arr[i];
-    if (!r || typeof r !== "object") return { ok: false, msg: `Record #${i + 1} is not an object.` };
-    for (const key of required) {
-      if (!(key in r)) return { ok: false, msg: `Record #${i + 1} missing key: ${key}` };
-    }
-    if (typeof r.id !== "string") return { ok: false, msg: `Record #${i + 1} id must be string.` };
-    if (typeof r.description !== "string") return { ok: false, msg: `Record #${i + 1} description must be string.` };
-    if (typeof r.category !== "string") return { ok: false, msg: `Record #${i + 1} category must be string.` };
-    if (typeof r.date !== "string") return { ok: false, msg: `Record #${i + 1} date must be string.` };
-    if (typeof r.amount !== "number") return { ok: false, msg: `Record #${i + 1} amount must be number.` };
+    if (!r || typeof r !== "object") return { ok: false, msg: `Record #${i + 1} is not valid.` };
+    for (const key of required) if (!(key in r)) return { ok: false, msg: `Record #${i + 1} is missing: ${key}` };
 
-    // Validate with existing regex rules
     const errs = validateTxn({
       description: r.description,
       amount: String(r.amount),
       category: r.category,
       date: r.date,
+      receiptUrl: r.receiptUrl || ""
     });
-    if (Object.keys(errs).length) {
-      return { ok: false, msg: `Record #${i + 1} fails validation (check date/amount/category/description).` };
-    }
+    if (Object.keys(errs).length) return { ok: false, msg: `Record #${i + 1} has invalid values.` };
   }
   return { ok: true };
 }
 
+function downloadJson(filename, data) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 function bindEvents() {
-  // Tabs
   els.tabs().forEach((btn) => {
     btn.addEventListener("click", () => {
       const v = btn.dataset.tab;
@@ -355,26 +342,25 @@ function bindEvents() {
     });
   });
 
-  // Search
   els.regexInput.addEventListener("input", () => {
     setSearch({ pattern: els.regexInput.value, caseInsensitive: els.caseToggle.checked });
     renderRecords();
   });
+
   els.caseToggle.addEventListener("change", () => {
     setSearch({ pattern: els.regexInput.value, caseInsensitive: els.caseToggle.checked });
     renderRecords();
   });
 
-  // Sort
   els.sortBy.addEventListener("change", () => {
     setSort(els.sortBy.value);
     renderRecords();
   });
 
-  // Table/Card action delegation
   const handleAction = (e) => {
     const btn = e.target.closest("button[data-action]");
     if (!btn) return;
+
     const id = btn.dataset.id;
     const action = btn.dataset.action;
 
@@ -384,27 +370,22 @@ function bindEvents() {
       fillForm(rec);
       setView("add");
       showPanel("add");
-      announceStatus(`Editing ${id}`);
       els.description.focus();
     }
 
     if (action === "delete") {
-      const ok = confirm(`Delete ${id}? This cannot be undone.`);
-      if (!ok) return;
-      const changed = deleteRecord(id);
-      if (changed) {
-        announceStatus(`Deleted ${id}`);
+      if (!confirm(`Delete ${id}?`)) return;
+      if (deleteRecord(id)) {
         renderRecords();
         renderDashboard();
-        // If currently editing same id, reset
         if (els.editId.value === id) resetForm();
       }
     }
   };
+
   els.tbody.addEventListener("click", handleAction);
   els.cards.addEventListener("click", handleAction);
 
-  // Form submit
   els.form.addEventListener("submit", (e) => {
     e.preventDefault();
     clearFormErrors();
@@ -414,27 +395,25 @@ function bindEvents() {
       amount: els.amount.value,
       category: els.category.value,
       date: els.date.value,
+      receiptUrl: els.receiptUrl.value,
     };
 
     const errors = validateTxn(payload);
+
     if (errors.description) els.errDescription.textContent = errors.description;
     if (errors.amount) els.errAmount.textContent = errors.amount;
     if (errors.category) els.errCategory.textContent = errors.category;
     if (errors.date) els.errDate.textContent = errors.date;
+    if (errors.receiptUrl) els.errReceipt.textContent = errors.receiptUrl;
 
     if (Object.keys(errors).length) {
-      announceAlert("Fix form errors and try again.");
+      announceAlert("Please fix the highlighted fields.");
       return;
     }
 
     const id = els.editId.value.trim();
-    if (!id) {
-      addRecord(payload);
-      announceStatus("Record added.");
-    } else {
-      updateRecord(id, payload);
-      announceStatus("Record updated.");
-    }
+    if (!id) addRecord(payload);
+    else updateRecord(id, payload);
 
     resetForm();
     renderRecords();
@@ -443,137 +422,137 @@ function bindEvents() {
     showPanel("records");
   });
 
-  els.resetBtn.addEventListener("click", () => {
-    resetForm();
-    announceStatus("Form cleared.");
-  });
+  els.resetBtn.addEventListener("click", resetForm);
 
   els.deleteBtn.addEventListener("click", () => {
     const id = els.editId.value.trim();
     if (!id) return;
-    const ok = confirm(`Delete ${id}? This cannot be undone.`);
-    if (!ok) return;
-    const changed = deleteRecord(id);
-    if (changed) {
+    if (!confirm(`Delete ${id}?`)) return;
+    if (deleteRecord(id)) {
       resetForm();
       renderRecords();
       renderDashboard();
-      announceStatus(`Deleted ${id}`);
       setView("records");
       showPanel("records");
     }
   });
 
-  // Settings
+  els.darkModeToggle.addEventListener("change", () => {
+    const theme = els.darkModeToggle.checked ? "dark" : "light";
+    setSettings({ theme });
+    applyTheme(theme);
+  });
+
   els.saveRatesBtn.addEventListener("click", () => {
     const baseCurrency = els.baseCurrency.value;
     const rateUSD = els.rateUSD.value.trim();
     const rateEUR = els.rateEUR.value.trim();
     const errs = validateRates({ rateUSD, rateEUR });
     if (Object.keys(errs).length) {
-      announceAlert(Object.values(errs).join(" "));
+      announceAlert("Please enter valid rates.");
       return;
     }
     setSettings({ baseCurrency, rateUSD, rateEUR });
-    announceStatus("Currency settings saved.");
     renderDashboard();
     renderRecords();
+    announceStatus("Currency saved.");
   });
 
   els.saveCapBtn.addEventListener("click", () => {
     const res = validateCap(els.capValue.value);
-    if (!res.ok) {
-      announceAlert(res.msg);
-      return;
-    }
+    if (!res.ok) return announceAlert(res.msg);
     setSettings({ cap: res.value });
-    announceStatus("Cap saved.");
     renderDashboard();
+    announceStatus("Cap saved.");
   });
 
   els.saveCatsBtn.addEventListener("click", () => {
-    const raw = els.categoriesInput.value
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-
-    // basic validation with same category regex rule (letters/spaces/hyphens)
+    const raw = els.categoriesInput.value.split(",").map((s) => s.trim()).filter(Boolean);
     const bad = raw.find((c) => !/^[A-Za-z]+(?:[ -][A-Za-z]+)*$/.test(c));
-    if (bad) {
-      announceAlert(`Invalid category: "${bad}". Use letters/spaces/hyphens.`);
-      return;
-    }
-
+    if (bad) return announceAlert(`Invalid category: "${bad}".`);
     setSettings({ categories: raw.length ? raw : state.settings.categories });
     announceStatus("Categories saved.");
   });
 
   els.exportBtn.addEventListener("click", () => {
     els.exportArea.value = JSON.stringify(state.records, null, 2);
-    announceStatus("Export generated (copy from the box).");
   });
 
-  els.downloadSeedBtn.addEventListener("click", () => {
-    // a simple seed template generator
-    const seed = [
-      { id:"rec_0001", description:"Lunch at cafeteria", amount:1250.00, category:"Food", date:"2025-09-25", createdAt:new Date().toISOString(), updatedAt:new Date().toISOString() }
-    ];
-    els.exportArea.value = JSON.stringify(seed, null, 2);
-    announceStatus("Seed template generated in Export box.");
+  els.downloadExportBtn.addEventListener("click", () => {
+    const filename = `finance_records_${new Date().toISOString().slice(0,10)}.json`;
+    downloadJson(filename, state.records);
+  });
+
+  els.loadSeedBtn.addEventListener("click", async () => {
+    try {
+      const res = await fetch("./seed.json");
+      const data = await res.json();
+      const v = isImportValid(data);
+      if (!v.ok) return announceAlert(v.msg);
+      state.records = data;
+      localStorage.setItem(keys.DATA_KEY, JSON.stringify(state.records));
+      renderDashboard();
+      renderRecords();
+      announceStatus("Seed loaded.");
+    } catch {
+      announceAlert("Could not load seed.json.");
+    }
   });
 
   els.importBtn.addEventListener("click", () => {
     let parsed;
-    try {
-      parsed = JSON.parse(els.importArea.value);
-    } catch {
-      announceAlert("Invalid JSON. Fix syntax and try again.");
-      return;
-    }
-    const v = isImportValid(parsed);
-    if (!v.ok) {
-      announceAlert(v.msg);
-      return;
-    }
-    // replace all records
-    state.records = parsed;
-    announceStatus(`Imported ${parsed.length} records.`);
-    // persist through state module function (simple direct call)
-    // (we can't import persistAll here without circular; so use setSettings no-op trick?)
-    // Better: just call localStorage directly here:
-    localStorage.setItem("sft:data:v1", JSON.stringify(state.records));
+    try { parsed = JSON.parse(els.importArea.value); }
+    catch { return announceAlert("Invalid JSON."); }
 
+    const v = isImportValid(parsed);
+    if (!v.ok) return announceAlert(v.msg);
+
+    state.records = parsed;
+    localStorage.setItem(keys.DATA_KEY, JSON.stringify(state.records));
     renderDashboard();
     renderRecords();
     setView("records");
     showPanel("records");
+    announceStatus("Imported successfully.");
+  });
+
+  els.importFile.addEventListener("change", async () => {
+    const file = els.importFile.files?.[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      const v = isImportValid(parsed);
+      if (!v.ok) return announceAlert(v.msg);
+
+      state.records = parsed;
+      localStorage.setItem(keys.DATA_KEY, JSON.stringify(state.records));
+      renderDashboard();
+      renderRecords();
+      announceStatus("Imported successfully.");
+    } catch {
+      announceAlert("Could not import that file.");
+    } finally {
+      els.importFile.value = "";
+    }
   });
 }
 
 export function initUI() {
-  // Init settings fields
+  applyTheme(state.settings.theme);
+
   els.baseCurrency.value = state.settings.baseCurrency;
   els.rateUSD.value = state.settings.rateUSD || "";
   els.rateEUR.value = state.settings.rateEUR || "";
   els.capValue.value = state.settings.cap ?? "";
   els.categoriesInput.value = (state.settings.categories || []).join(", ");
 
-  // About links
-  els.githubLink.href = state.settings.user.github;
-  els.githubLink.textContent = state.settings.user.github;
-  els.emailLink.href = `mailto:${state.settings.user.email}`;
-  els.emailLink.textContent = state.settings.user.email;
-
-  // init controls
   els.caseToggle.checked = state.search.caseInsensitive;
   els.sortBy.value = state.sort;
 
-  els.year.textContent = String(new Date().getFullYear());
-
-  // Default view
   showPanel(state.view);
   renderDashboard();
   renderRecords();
-
   bindEvents();
 }

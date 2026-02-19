@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 200">
+  <!-- bars -->
+  <rect x="20" y="120" width="20" height="50" fill="black"/>
+  <rect x="60" y="100" width="20" height="70" fill="black"/>
+  <rect x="100" y="80" width="20" height="90" fill="black"/>
+  <rect x="140" y="50" width="20" height="120" fill="black"/>
+
+  <!-- growth arrow -->
+  <path d="M10 140 Q 80 60 200 40" fill="none" stroke="black" stroke-width="6"/>
+  <polygon points="190,25 210,40 188,45" fill="black"/>
+
+  <!-- coin -->
+  <circle cx="70" cy="40" r="20" fill="none" stroke="black" stroke-width="6"/>
+  <text x="70" y="48" text-anchor="middle" font-size="24" font-family="Arial" fill="black">$</text>
+</svg>

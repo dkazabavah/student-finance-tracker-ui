@@ -1,5 +1,4 @@
 import { loadData, saveData, loadSettings, saveSettings } from "./storage.js";
-
 import { normalizeSpaces } from "./validators.js";
 
 function nowISO() {
@@ -7,19 +6,24 @@ function nowISO() {
 }
 
 function nextId(records) {
-  // rec_0001 style
   const max = records.reduce((acc, r) => {
     const n = Number(String(r.id || "").replace("rec_", "")) || 0;
     return Math.max(acc, n);
   }, 0);
-  const next = String(max + 1).padStart(4, "0");
-  return `rec_${next}`;
+  return `rec_${String(max + 1).padStart(4, "0")}`;
 }
 
+/*
+  Default rates are prefilled using National Bank of Rwanda (BNR) selling rates
+  from 18-Feb-2026 (manual mode):
+  - USD selling: 1461.705 RWF  => 1 RWF ≈ 0.0006841326 USD
+  - EUR selling: 1731.170317 RWF => 1 RWF ≈ 0.0005776439 EUR
+*/
 const DEFAULT_SETTINGS = {
+  theme: "light",
   baseCurrency: "RWF",
-  rateUSD: "0.00075",
-  rateEUR: "0.00069",
+  rateUSD: "0.0006841326",
+  rateEUR: "0.0005776439",
   cap: null,
   categories: ["Food", "Books", "Transport", "Entertainment", "Fees", "Other"],
   user: {
@@ -41,7 +45,7 @@ export function persistAll() {
   saveSettings(state.settings);
 }
 
-export function addRecord({ description, amount, category, date }) {
+export function addRecord({ description, amount, category, date, receiptUrl }) {
   const createdAt = nowISO();
   const rec = {
     id: nextId(state.records),
@@ -49,6 +53,7 @@ export function addRecord({ description, amount, category, date }) {
     amount: Number(String(amount).trim()),
     category: normalizeSpaces(category),
     date: String(date).trim(),
+    receiptUrl: String(receiptUrl || "").trim(),
     createdAt,
     updatedAt: createdAt,
   };
@@ -69,6 +74,7 @@ export function updateRecord(id, patch) {
     category: patch.category != null ? normalizeSpaces(patch.category) : curr.category,
     amount: patch.amount != null ? Number(String(patch.amount).trim()) : curr.amount,
     date: patch.date != null ? String(patch.date).trim() : curr.date,
+    receiptUrl: patch.receiptUrl != null ? String(patch.receiptUrl).trim() : curr.receiptUrl,
     updatedAt: nowISO(),
   };
   state.records[idx] = updated;

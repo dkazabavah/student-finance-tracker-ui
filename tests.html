@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tests</title>
+  <link rel="stylesheet" href="./styles/main.css" />
+</head>
+<body>
+  <main class="wrap panel" style="margin-top:1rem;">
+    <h1>Tests</h1>
+    <p class="muted">Quick checks for input rules.</p>
+    <pre id="out" class="card"></pre>
+  </main>
+
+  <script type="module">
+    import { validateTxn } from "./scripts/validators.js";
+
+    const out = document.querySelector("#out");
+    const lines = [];
+
+    function ok(name, cond){
+      lines.push(`${cond ? "✅" : "❌"} ${name}`);
+    }
+
+    ok("Valid record passes",
+      Object.keys(validateTxn({
+        description:"Lunch",
+        amount:"12.50",
+        category:"Food",
+        date:"2026-02-19",
+        receiptUrl:""
+      })).length === 0
+    );
+
+    ok("Bad URL fails",
+      !!validateTxn({
+        description:"Lunch",
+        amount:"12.50",
+        category:"Food",
+        date:"2026-02-19",
+        receiptUrl:"ftp://badlink"
+      }).receiptUrl
+    );
+
+    out.textContent = lines.join("\n");
+  </script>
+</body>
+</html>

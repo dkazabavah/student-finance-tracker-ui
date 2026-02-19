@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <circle cx="100" cy="100" r="60" fill="none" stroke="black" stroke-width="8"/>
+  <text x="100" y="115" text-anchor="middle" font-size="48" font-family="Arial" fill="black">$</text>
+
+  <!-- circular arrows -->
+  <path d="M100 20 A80 80 0 0 1 170 80" fill="none" stroke="black" stroke-width="8"/>
+  <polygon points="170,80 150,75 160,95" fill="black"/>
+
+  <path d="M180 100 A80 80 0 0 1 120 180" fill="none" stroke="black" stroke-width="8"/>
+  <polygon points="120,180 125,160 105,170" fill="black"/>
+
+  <path d="M100 180 A80 80 0 0 1 20 120" fill="none" stroke="black" stroke-width="8"/>
+  <polygon points="20,120 40,125 30,105" fill="black"/>
+
+  <path d="M20 100 A80 80 0 0 1 80 20" fill="none" stroke="black" stroke-width="8"/>
+  <polygon points="80,20 75,40 95,30" fill="black"/>
+
+  <!-- hammer -->
+  <rect x="125" y="110" width="50" height="14" rx="4" fill="black" transform="rotate(45 125 110)"/>
+  <rect x="110" y="125" width="14" height="55" rx="6" fill="black" transform="rotate(45 110 125)"/>
+</svg>

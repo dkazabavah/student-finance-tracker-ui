@@ -6,60 +6,68 @@
   <title>Student Finance Tracker</title>
   <link rel="stylesheet" href="./styles/main.css" />
 </head>
+
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
 
   <header class="site-header">
     <div class="wrap header-row">
       <div class="brand">
-        <span class="logo" aria-hidden="true">₣</span>
+        <img class="brand-icon" src="./assets/wallet.svg" alt="" aria-hidden="true" />
         <div>
           <h1 class="title">Student Finance Tracker</h1>
-          <p class="subtitle">Budgets, transactions, regex search, and stats — all offline.</p>
+          <p class="subtitle">Track spending. Stay focused.</p>
         </div>
       </div>
 
-      <nav class="site-nav" aria-label="Primary">
+      <nav class="site-nav" aria-label="Primary navigation">
         <button class="tab-btn" data-tab="dashboard" type="button">Dashboard</button>
         <button class="tab-btn" data-tab="records" type="button">Records</button>
-        <button class="tab-btn" data-tab="add" type="button">Add/Edit</button>
-        <button class="tab-btn" data-tab="settings" type="button">Settings</button>
+        <button class="tab-btn" data-tab="add" type="button">Add</button>
+        <button class="tab-btn" data-tab="settings" type="button">
+          <span class="btn-ico" aria-hidden="true">⚙️</span> 
+        </button>
         <button class="tab-btn" data-tab="about" type="button">About</button>
       </nav>
     </div>
   </header>
 
   <main id="main" class="wrap" tabindex="-1">
-    <!-- ARIA live regions -->
+    <!-- Live regions (for status + important alerts) -->
     <div class="sr-only" id="liveStatus" role="status" aria-live="polite"></div>
     <div class="sr-only" id="liveAlert" aria-live="assertive"></div>
 
     <!-- DASHBOARD -->
     <section class="panel" id="panel-dashboard" aria-labelledby="h-dashboard">
       <header class="panel-head">
-        <h2 id="h-dashboard">Dashboard / Stats</h2>
-        <p class="muted">Quick view of totals, top category, and last 7 days trend.</p>
+        <div class="panel-title-row">
+          <div>
+            <h2 id="h-dashboard">Dashboard</h2>
+            <p class="muted">Your week at a glance.</p>
+          </div>
+          <img class="panel-art" src="./assets/hero.svg" alt="Illustration of tracking finances" />
+        </div>
       </header>
 
       <div class="stats-grid">
-        <article class="stat-card" aria-label="Total records">
+        <article class="stat-card">
           <h3>Total records</h3>
           <p class="stat" id="statTotalRecords">0</p>
         </article>
 
-        <article class="stat-card" aria-label="Total spent">
+        <article class="stat-card">
           <h3>Total spent</h3>
-          <p class="stat" id="statTotalSpent">0</p>
+          <p class="stat" id="statTotalSpent">RWF 0.00</p>
           <p class="muted small" id="statCurrencyNote">Base currency: RWF</p>
         </article>
 
-        <article class="stat-card" aria-label="Top category">
+        <article class="stat-card">
           <h3>Top category</h3>
           <p class="stat" id="statTopCategory">—</p>
         </article>
 
-        <article class="stat-card" aria-label="Budget cap">
-          <h3>Cap / Target</h3>
+        <article class="stat-card">
+          <h3>Monthly cap</h3>
           <p class="stat" id="statCap">—</p>
           <p class="muted small" id="statCapMsg">Set a cap in Settings.</p>
         </article>
@@ -67,10 +75,11 @@
 
       <section class="trend" aria-labelledby="h-trend">
         <div class="trend-head">
-          <h3 id="h-trend">Last 7 days trend</h3>
-          <p class="muted small">Simple chart: daily totals (base currency).</p>
+          <h3 id="h-trend">Last 7 days</h3>
+          <p class="muted small">Daily spending trend.</p>
         </div>
-        <div class="chart" role="img" aria-label="Bar chart showing spending for last 7 days">
+
+        <div class="chart" role="img" aria-label="Bar chart showing spending for the last 7 days">
           <div class="bars" id="trendBars" aria-hidden="true"></div>
           <div class="chart-labels" id="trendLabels"></div>
         </div>
@@ -81,20 +90,20 @@
     <section class="panel" id="panel-records" aria-labelledby="h-records" hidden>
       <header class="panel-head">
         <h2 id="h-records">Records</h2>
-        <p class="muted">Sort, search with regex, edit inline, or delete.</p>
+        <p class="muted">Search, sort, edit, or delete your transactions.</p>
       </header>
 
       <div class="toolbar">
         <div class="searchbox" role="search">
-          <label for="regexInput">Live Regex Search</label>
+          <label for="regexInput">Search</label>
           <div class="search-row">
-            <input id="regexInput" type="text" placeholder="e.g. (coffee|tea) or \b(\w+)\s+\1\b" inputmode="text" />
+            <input id="regexInput" type="text" placeholder="Type to search..." />
             <label class="check">
               <input id="caseToggle" type="checkbox" />
-              Case-insensitive
+              Ignore case
             </label>
           </div>
-          <p class="hint" id="regexHint">Type a regex pattern. Invalid patterns won’t crash the app.</p>
+          <p class="hint" id="regexHint"></p>
         </div>
 
         <div class="sortbox">
@@ -111,7 +120,7 @@
       </div>
 
       <!-- Desktop table -->
-      <div class="table-wrap" id="tableWrap" aria-label="Records table">
+      <div class="table-wrap" aria-label="Records table">
         <table class="records-table">
           <caption class="sr-only">Transactions list</caption>
           <thead>
@@ -119,6 +128,7 @@
               <th scope="col">Date</th>
               <th scope="col">Description</th>
               <th scope="col">Category</th>
+              <th scope="col">Photo</th>
               <th scope="col" class="num">Amount</th>
               <th scope="col">Actions</th>
             </tr>
@@ -128,14 +138,14 @@
       </div>
 
       <!-- Mobile cards -->
-      <div class="cards" id="recordsCards" aria-label="Records cards (mobile)"></div>
+      <div class="cards" id="recordsCards" aria-label="Records cards"></div>
     </section>
 
-    <!-- ADD/EDIT FORM -->
+    <!-- ADD/EDIT -->
     <section class="panel" id="panel-add" aria-labelledby="h-add" hidden>
       <header class="panel-head">
-        <h2 id="h-add">Add / Edit Transaction</h2>
-        <p class="muted">Validation uses regex. Errors are announced to assistive tech.</p>
+        <h2 id="h-add">Add / Edit</h2>
+        <p class="muted">Save a new transaction or update an existing one.</p>
       </header>
 
       <form id="txnForm" novalidate>
@@ -144,26 +154,33 @@
         <div class="grid-2">
           <div class="field">
             <label for="description">Description</label>
-            <input id="description" name="description" type="text" placeholder="e.g., Lunch at cafeteria" required />
+            <input id="description" type="text" placeholder="e.g., Lunch" required />
             <p class="error" id="errDescription" aria-live="polite"></p>
           </div>
 
           <div class="field">
-            <label for="amount">Amount (base)</label>
-            <input id="amount" name="amount" type="text" placeholder="e.g., 1200 or 12.50" inputmode="decimal" required />
+            <label for="amount">Amount</label>
+            <input id="amount" type="text" inputmode="decimal" placeholder="e.g., 1200 or 12.50" required />
             <p class="error" id="errAmount" aria-live="polite"></p>
           </div>
 
           <div class="field">
             <label for="category">Category</label>
-            <input id="category" name="category" type="text" placeholder="Food, Books, Transport..." required />
+            <input id="category" type="text" placeholder="Food, Books, Transport..." required />
             <p class="error" id="errCategory" aria-live="polite"></p>
           </div>
 
           <div class="field">
             <label for="date">Date (YYYY-MM-DD)</label>
-            <input id="date" name="date" type="text" placeholder="2025-09-29" inputmode="numeric" required />
+            <input id="date" type="text" inputmode="numeric" placeholder="2026-02-19" required />
             <p class="error" id="errDate" aria-live="polite"></p>
+          </div>
+
+          <div class="field field-full">
+            <label for="receiptUrl">Receipt photo (optional URL)</label>
+            <input id="receiptUrl" type="text" inputmode="url" placeholder="https://..." />
+            <p class="error" id="errReceipt" aria-live="polite"></p>
+            <p class="muted small">Tip: paste a link from an image you uploaded online.</p>
           </div>
         </div>
 
@@ -172,21 +189,31 @@
           <button class="btn" id="resetBtn" type="button">Clear</button>
           <button class="btn danger" id="deleteBtn" type="button" disabled>Delete</button>
         </div>
-
-        <p class="hint">
-          Advanced regex rule: duplicate words like <code>"coffee coffee"</code> are blocked.
-        </p>
       </form>
     </section>
 
     <!-- SETTINGS -->
     <section class="panel" id="panel-settings" aria-labelledby="h-settings" hidden>
       <header class="panel-head">
-        <h2 id="h-settings">Settings</h2>
-        <p class="muted">Currency + manual rates, cap/target, categories, import/export.</p>
+        <div class="settings-head">
+          <h2 id="h-settings">
+            <img class="mini-ico" src="./assets/settings.svg" alt="" aria-hidden="true" />
+            Settings
+          </h2>
+          <p class="muted">Make it yours.</p>
+        </div>
       </header>
 
       <div class="settings-grid">
+        <section class="card" aria-labelledby="h-theme">
+          <h3 id="h-theme">Appearance</h3>
+          <label class="toggle-row">
+            <span>Dark Mode</span>
+            <input id="darkModeToggle" type="checkbox" />
+          </label>
+          <p class="muted small">Saved automatically.</p>
+        </section>
+
         <section class="card" aria-labelledby="h-currency">
           <h3 id="h-currency">Currency</h3>
 
@@ -197,36 +224,37 @@
               <option value="USD">USD</option>
               <option value="EUR">EUR</option>
             </select>
-            <p class="hint">All amounts are stored in base currency. Rates are for display conversions only.</p>
           </div>
 
           <div class="grid-2">
             <div class="field">
               <label for="rateUSD">Rate (1 Base → USD)</label>
-              <input id="rateUSD" type="text" inputmode="decimal" placeholder="e.g., 0.00075" />
+              <input id="rateUSD" type="text" inputmode="decimal" />
             </div>
             <div class="field">
               <label for="rateEUR">Rate (1 Base → EUR)</label>
-              <input id="rateEUR" type="text" inputmode="decimal" placeholder="e.g., 0.00069" />
+              <input id="rateEUR" type="text" inputmode="decimal" />
             </div>
           </div>
 
-          <button class="btn" id="saveRatesBtn" type="button">Save Currency Settings</button>
+          <p class="muted small">
+            Default values are prefilled using official BNR selling rates (manual mode).
+          </p>
+
+          <button class="btn" id="saveRatesBtn" type="button">Save Currency</button>
         </section>
 
         <section class="card" aria-labelledby="h-cap">
-          <h3 id="h-cap">Cap / Target</h3>
+          <h3 id="h-cap">Monthly cap</h3>
           <div class="field">
-            <label for="capValue">Monthly cap (base)</label>
+            <label for="capValue">Cap amount</label>
             <input id="capValue" type="text" inputmode="decimal" placeholder="e.g., 200000" />
-            <p class="hint">Dashboard announces remaining/overage using ARIA live.</p>
           </div>
           <button class="btn" id="saveCapBtn" type="button">Save Cap</button>
         </section>
 
         <section class="card" aria-labelledby="h-cats">
           <h3 id="h-cats">Categories</h3>
-          <p class="muted small">Default: Food, Books, Transport, Entertainment, Fees, Other</p>
           <div class="field">
             <label for="categoriesInput">Comma-separated categories</label>
             <textarea id="categoriesInput" rows="3" placeholder="Food, Books, Transport, Entertainment, Fees, Other"></textarea>
@@ -235,19 +263,25 @@
         </section>
 
         <section class="card" aria-labelledby="h-io">
-          <h3 id="h-io">Import / Export JSON</h3>
+          <h3 id="h-io">Import / Export</h3>
 
           <div class="io-actions">
-            <button class="btn" id="exportBtn" type="button">Export</button>
-            <button class="btn" id="downloadSeedBtn" type="button">Download seed template</button>
+            <button class="btn" id="exportBtn" type="button">Export (Copy)</button>
+            <button class="btn primary" id="downloadExportBtn" type="button">Export (Download)</button>
+            <button class="btn" id="loadSeedBtn" type="button">Load seed.json</button>
           </div>
 
           <div class="field">
-            <label for="importArea">Import JSON</label>
-            <textarea id="importArea" rows="7" placeholder='Paste JSON array here...'></textarea>
-            <p class="hint">Import validates structure & required keys before loading.</p>
+            <label for="importFile">Import from file</label>
+            <input id="importFile" type="file" accept="application/json,.json" />
           </div>
-          <button class="btn primary" id="importBtn" type="button">Validate & Import</button>
+
+          <div class="field">
+            <label for="importArea">Import from text</label>
+            <textarea id="importArea" rows="7" placeholder="Paste JSON here..."></textarea>
+          </div>
+
+          <button class="btn" id="importBtn" type="button">Import</button>
 
           <div class="field">
             <label for="exportArea">Export output</label>
@@ -260,34 +294,37 @@
     <!-- ABOUT -->
     <section class="panel" id="panel-about" aria-labelledby="h-about" hidden>
       <header class="panel-head">
-        <h2 id="h-about">About</h2>
+        <div class="panel-title-row">
+          <div>
+            <h2 id="h-about">About</h2>
+            <p class="muted">A simple tool to help you stay organized.</p>
+          </div>
+          <img class="panel-art" src="./assets/about.svg" alt="Illustration of planning expenses" />
+        </div>
       </header>
 
       <div class="card">
-        <p>
-          This Student Finance Tracker is a responsive, accessible, offline-first vanilla app.
-          It demonstrates semantic HTML, mobile-first CSS, DOM manipulation, events, regex validation & regex search,
-          localStorage persistence, and JSON import/export with validation.
-        </p>
+        <h3>How it works</h3>
+        <ul class="about-list">
+          <li>Add your spending in the <strong>Add</strong> page.</li>
+          <li>View everything in <strong>Records</strong> (you can search and sort).</li>
+          <li>Your data saves automatically — even after refresh.</li>
+          <li>Use <strong>Settings</strong> for dark mode, currency, categories, and export/import.</li>
+        </ul>
 
         <h3>Contact</h3>
         <ul>
-          <li>GitHub: <a id="githubLink" href="#" rel="noopener">your-github</a></li>
-          <li>Email: <a id="emailLink" href="#">your@email.com</a></li>
+          <li>GitHub: <a id="githubLink" href="https://github.com/dkazabavah" target="_blank" rel="noopener">https://github.com/dkazabavah</a></li>
+          <li>Email: <a id="emailLink" href="mailto:d.kazabavah@alustudent.com">d.kazabavah@alustudent.com</a></li>
         </ul>
-
-        <p class="muted small">
-          Update your links in <code>scripts/state.js</code> (settings.user).
-        </p>
       </div>
     </section>
 
     <footer class="site-footer">
-      <p class="muted small">© <span id="year"></span> Student Finance Tracker — Vanilla HTML/CSS/JS</p>
+      <p class="muted small">&copy; Kdavid — All rights reserved.</p>
     </footer>
   </main>
 
   <script type="module" src="./scripts/app.js"></script>
-
 </body>
 </html>

@@ -1,12 +1,12 @@
 [
-  { "id":"rec_0001", "description":"Lunch at cafeteria", "amount":1250, "category":"Food", "date":"2025-09-25", "createdAt":"2025-09-25T10:10:00.000Z", "updatedAt":"2025-09-25T10:10:00.000Z" },
-  { "id":"rec_0002", "description":"Chemistry textbook", "amount":89999.99, "category":"Books", "date":"2025-09-23", "createdAt":"2025-09-23T08:30:00.000Z", "updatedAt":"2025-09-23T08:30:00.000Z" },
-  { "id":"rec_0003", "description":"Bus pass", "amount":4500, "category":"Transport", "date":"2025-09-20", "createdAt":"2025-09-20T06:00:00.000Z", "updatedAt":"2025-09-20T06:00:00.000Z" },
-  { "id":"rec_0004", "description":"Coffee with friends", "amount":875, "category":"Entertainment", "date":"2025-09-28", "createdAt":"2025-09-28T16:20:00.000Z", "updatedAt":"2025-09-28T16:20:00.000Z" },
-  { "id":"rec_0005", "description":"Tuition Fees", "amount":1200000, "category":"Fees", "date":"2025-09-01", "createdAt":"2025-09-01T09:00:00.000Z", "updatedAt":"2025-09-01T09:00:00.000Z" },
-  { "id":"rec_0006", "description":"Late night snack", "amount":350, "category":"Food", "date":"2025-09-29", "createdAt":"2025-09-29T21:45:00.000Z", "updatedAt":"2025-09-29T21:45:00.000Z" },
-  { "id":"rec_0007", "description":"Printing assignment pages", "amount":120, "category":"Other", "date":"2025-09-18", "createdAt":"2025-09-18T12:00:00.000Z", "updatedAt":"2025-09-18T12:00:00.000Z" },
-  { "id":"rec_0008", "description":"Tea at library", "amount":400, "category":"Food", "date":"2025-09-27", "createdAt":"2025-09-27T14:10:00.000Z", "updatedAt":"2025-09-27T14:10:00.000Z" },
-  { "id":"rec_0009", "description":"Weekend movie ticket", "amount":2500, "category":"Entertainment", "date":"2025-09-26", "createdAt":"2025-09-26T18:00:00.000Z", "updatedAt":"2025-09-26T18:00:00.000Z" },
-  { "id":"rec_0010", "description":"New backpack", "amount":28000, "category":"Other", "date":"2025-09-22", "createdAt":"2025-09-22T11:11:00.000Z", "updatedAt":"2025-09-22T11:11:00.000Z" }
+  { "id":"rec_0001", "description":"Lunch", "amount":1250, "category":"Food", "date":"2026-02-15", "receiptUrl":"", "createdAt":"2026-02-15T10:10:00.000Z", "updatedAt":"2026-02-15T10:10:00.000Z" },
+  { "id":"rec_0002", "description":"Notebook", "amount":1500, "category":"Books", "date":"2026-02-14", "receiptUrl":"", "createdAt":"2026-02-14T08:30:00.000Z", "updatedAt":"2026-02-14T08:30:00.000Z" },
+  { "id":"rec_0003", "description":"Bus", "amount":800, "category":"Transport", "date":"2026-02-13", "receiptUrl":"", "createdAt":"2026-02-13T06:00:00.000Z", "updatedAt":"2026-02-13T06:00:00.000Z" },
+  { "id":"rec_0004", "description":"Coffee", "amount":700, "category":"Food", "date":"2026-02-12", "receiptUrl":"", "createdAt":"2026-02-12T16:20:00.000Z", "updatedAt":"2026-02-12T16:20:00.000Z" },
+  { "id":"rec_0005", "description":"Data bundle", "amount":3000, "category":"Other", "date":"2026-02-11", "receiptUrl":"", "createdAt":"2026-02-11T09:00:00.000Z", "updatedAt":"2026-02-11T09:00:00.000Z" },
+  { "id":"rec_0006", "description":"Printing", "amount":1200, "category":"Other", "date":"2026-02-10", "receiptUrl":"", "createdAt":"2026-02-10T12:00:00.000Z", "updatedAt":"2026-02-10T12:00:00.000Z" },
+  { "id":"rec_0007", "description":"Movie", "amount":2500, "category":"Entertainment", "date":"2026-02-09", "receiptUrl":"", "createdAt":"2026-02-09T18:00:00.000Z", "updatedAt":"2026-02-09T18:00:00.000Z" },
+  { "id":"rec_0008", "description":"Stationery", "amount":2200, "category":"Books", "date":"2026-02-08", "receiptUrl":"", "createdAt":"2026-02-08T11:11:00.000Z", "updatedAt":"2026-02-08T11:11:00.000Z" },
+  { "id":"rec_0009", "description":"Snacks", "amount":900, "category":"Food", "date":"2026-02-07", "receiptUrl":"", "createdAt":"2026-02-07T21:45:00.000Z", "updatedAt":"2026-02-07T21:45:00.000Z" },
+  { "id":"rec_0010", "description":"Fees", "amount":5000, "category":"Fees", "date":"2026-02-06", "receiptUrl":"", "createdAt":"2026-02-06T09:00:00.000Z", "updatedAt":"2026-02-06T09:00:00.000Z" }
 ]
