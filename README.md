@@ -131,6 +131,10 @@ localStorage
 
 No frameworks used
 
+## Demo Video
+
+https://drive.google.com/file/d/1ANUiNYifmuhVJHgJFOeY3tKpV9DN6BAs/view?usp=sharing
+
 ## Author
 
 David Kazabavaho
