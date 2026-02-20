@@ -17,6 +17,7 @@ A simple finance tracker to help you record daily spending and stay organized.
 Use a local server (recommended):
 - VS Code → Live Server → Open `index.html
 
+
 ## Import / Export
 - Export (Copy): shows JSON in the Export output box
 - Export (Download): downloads a `.json` file
